@@ -1,81 +1,17 @@
-# fo11y-demo
+Success-Faro-Tempo
+Giới thiệu
+Success-Faro-Tempo là một dự án mẫu minh họa cách tích hợp và sử dụng Grafana Faro Web SDK và Grafana Tempo để giám sát hiệu suất ứng dụng web (Real User Monitoring - RUM) và truy vết phân tán (distributed tracing). Dự án này nhằm mục đích giúp các nhà phát triển hiểu cách thu thập dữ liệu telemetry từ ứng dụng frontend, chuyển tiếp dữ liệu đến Grafana Tempo để phân tích, và trực quan hóa kết quả bằng Grafana.
 
-## Mastering Frontend Observability in React with Grafana Faro
+Dự án được xây dựng với mục tiêu tuân thủ các quy định về bản quyền và số hữu tri, đảm bảo tất cả nội dung và công cụ được sử dụng đúng cách, có ghi nguồn rõ ràng.
 
-Welcome to the `fo11y-demo` project! This demo application serves as the foundation for a video tutorial teaching you how to instrument a React application with Grafana Faro. The tutorial is hosted on YouTube: [Mastering Frontend Observability in React with Grafana Faro](https://youtu.be/IA_-zkpVhIU).
-
-## Project Structure
-
-The project is divided into two main folders:
-
-1. **frontend**: Contains the React application.
-2. **steam-service**: Contains the backend service.
-
-## Getting Started
-
-### Prerequisites
-
-Make sure you have the following installed on your machine:
-
-- Node.js
-- npm (Node Package Manager)
-
-### Running the Frontend
-
-1. Navigate to the frontend directory:
-
-    ```bash
-    cd frontend
-    ```
-
-2. Install the dependencies:
-
-    ```bash
-    npm install
-    ```
-
-3. Start the frontend application:
-
-    ```bash
-    npm start
-    ```
-
-   The frontend application will be running at [http://localhost:3000](http://localhost:3000).
-
-### Running the Backend
-
-1. Navigate to the backend directory:
-
-    ```bash
-    cd steam-service
-    ```
-
-2. Install the dependencies:
-
-    ```bash
-    npm install
-    ```
-
-3. Start the backend service:
-
-    ```bash
-    npm start
-    ```
-
-   The backend service will be running at [http://localhost:1337](http://localhost:1337).
-
-## Purpose
-
-The purpose of this app is to provide a foundation for a video tutorial teaching you how to instrument a React application with Grafana Faro. The tutorial covers:
-
-- Creating a Grafana Faro (Frontend Observability) app in Grafana Cloud
-- Setting up Grafana Faro in a React application
-- Instrumenting various parts of the frontend for observability
-
-## Video Tutorial
-
-Watch the full video tutorial on YouTube to learn how to set up and use Grafana Faro for frontend observability in your React projects: [Mastering Frontend Observability in React with Grafana Faro](https://youtu.be/IA_-zkpVhIU).
-
-## License
-
-This project is licensed under the MIT License.
+Tính năng chính
+Giám sát người dùng thực (RUM): Sử dụng Grafana Faro Web SDK để thu thập dữ liệu hiệu suất, lỗi frontend và hành vi người dùng.
+Truy vết phân tán: Tích hợp với Grafana Tempo để lưu trữ và phân tích dữ liệu truy vết từ ứng dụng.
+Tích hợp đầy đủ: Kết nối dữ liệu frontend với backend và hạ tầng để đạt được khả năng quan sát toàn diện (full-stack observability).
+Triển khai đơn giản: Cung cấp cấu hình cơ bản để dễ dàng triển khai trên Grafana Alloy hoặc Grafana Cloud.
+Yêu cầu
+Node.js (phiên bản 14 trở lên)
+Grafana Alloy hoặc Grafana Cloud instance
+Grafana Tempo instance (để lưu trữ dữ liệu truy vết)
+Grafana Loki (tùy chọn, để lưu trữ logs)
+Trình duyệt hiện đại hỗ trợ JavaScript
