@@ -1,0 +1,65 @@
+target: all
+auth_enabled: false
+
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 9095
+  grpc_server_max_recv_msg_size: 16777216  # 16MB
+  grpc_server_max_send_msg_size: 16777216
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/blocks
+    wal:
+      path: /var/tempo/wal 
+      
+ingester:
+  max_block_duration: 2h
+  complete_block_timeout: 10m
+  lifecycler:
+    ring:
+      kvstore:
+        store: memberlist
+      replication_factor: 1
+    address: tempo-ingester
+    final_sleep: 2m
+
+distributor:
+  ring:
+    kvstore:
+      store: memberlist
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+querier:
+  frontend_worker:
+    frontend_address: tempo-query-frontend:9095
+
+query_frontend: {}
+
+compactor:
+  compaction:
+    block_retention: 1h
+    compaction_window: 1h
+    compacted_block_retention: 72h
+  ring:
+    kvstore:
+      store: memberlist
+
+memberlist:
+  bind_port: 7946
+  join_members:
+    - tempo-distributor
+    - tempo-ingester
+    - tempo-querier
+    - tempo-query-frontend
+    - tempo-compactor
+  abort_if_cluster_join_fails: false
+  max_join_retries: 10

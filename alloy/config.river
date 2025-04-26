@@ -1,0 +1,114 @@
+logging {
+  level  = "debug"
+  format = "logfmt"
+}
+
+
+
+// Nhận dữ liệu từ Faro
+faro.receiver "default" {
+  server {
+    listen_address = "0.0.0.0"
+    listen_port = 12347
+    cors_allowed_origins = ["*"]
+  }
+  output {
+    logs = [loki.write.faro.receiver]
+    traces = [otelcol.processor.attributes.faro_trace_fix.input]
+  }
+}
+
+// Chuyển từ Faro sang Loki distributor
+loki.write "faro" {
+  endpoint {
+    url = "http://loki-distributor:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    source = "faro",
+    app = "RUM-demo",
+    env = "production",
+  }
+}
+
+// Thu thập logs từ backend
+local.file_match "backend_logs" {
+  path_targets = [{"__path__" = "/var/log/backend/*.log"}]
+}
+
+loki.source.file "backend" {
+  targets    = local.file_match.backend_logs.targets
+  forward_to = [loki.write.backend.receiver]
+}
+
+loki.write "backend" {
+  endpoint {
+    url = "http://loki-distributor:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    job = "backend",
+    app = "backend",
+    env = "production",
+  }
+}
+
+// Thu thập metrics từ backend
+prometheus.scrape "backend_metrics" {
+  targets = [
+    {
+      __address__ = "172.20.0.6:1337",
+      job = "backend",
+    },
+  ]
+  metrics_path = "/metrics"
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+// Gửi metrics đến Prometheus
+prometheus.remote_write "default" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"  // URL Prometheus
+  }
+}
+
+// Thu nhận trace từ các nguồn OTLP
+otelcol.receiver.otlp "default" {
+  grpc {
+    
+  }
+  http {
+
+  }
+  output {
+    traces = [otelcol.processor.batch.default.input]
+  }
+}
+
+// Xử lý trace từ Faro: gán service.name = "RUM-demo"
+otelcol.processor.attributes "faro_trace_fix" {
+    action {
+		  key = "service.name"
+      action = "insert"
+      value = "RUM-demo"
+	  }
+
+    output {
+        traces = [otelcol.processor.batch.default.input]
+    }
+}
+
+// Gom các trace trước khi gửi Tempo
+otelcol.processor.batch "default" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+// Gửi trace tới Tempo distributor
+otelcol.exporter.otlp "tempo" {
+  client {
+     endpoint = "tempo-distributor:4317" 
+    tls { insecure = true 
+    insecure_skip_verify = true
+    }
+  }
+}

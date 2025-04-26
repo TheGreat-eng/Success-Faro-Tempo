@@ -1,0 +1,17 @@
+{
+	"ulid": "01JS954CY3CZZEV32YXZEQ6ATH",
+	"minTime": 1745127037107,
+	"maxTime": 1745128800000,
+	"stats": {
+		"numSamples": 84629,
+		"numSeries": 826,
+		"numChunks": 827
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01JS954CY3CZZEV32YXZEQ6ATH"
+		]
+	},
+	"version": 1
+}

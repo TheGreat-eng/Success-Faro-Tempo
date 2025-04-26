@@ -1,0 +1,17 @@
+{
+	"ulid": "01JSRP1M05BFTV68KT819SNGYH",
+	"minTime": 1745648086754,
+	"maxTime": 1745654400000,
+	"stats": {
+		"numSamples": 132310,
+		"numSeries": 1578,
+		"numChunks": 1599
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01JSRP1M05BFTV68KT819SNGYH"
+		]
+	},
+	"version": 1
+}

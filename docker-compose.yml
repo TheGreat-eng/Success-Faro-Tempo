@@ -1,0 +1,184 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data/prometheus:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
+    ports:
+      - "9090:9090"
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.2
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "4000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.3
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=grpcServer
+      - GF_PLUGIN_TEMPO_BACKEND=grpc
+      - GF_PLUGIN_TEMPO_GRPC_MAX_RECV_MSG_SIZE=16777216 # 16MB
+      - GF_PLUGIN_TEMPO_GRPC_MAX_SEND_MSG_SIZE=16777216 # 16MB
+
+  loki-distributor:
+    image: grafana/loki:2.9.4
+    command: -config.file=/etc/loki/config.yml -target=distributor
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml
+      - ./data/loki:/etc/loki
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.4
+
+  loki-ingester:
+    image: grafana/loki:2.9.4
+    command: -config.file=/etc/loki/config.yml -target=ingester
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml
+      - ./data/loki:/etc/loki
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.5
+
+  loki-querier:
+    image: grafana/loki:2.9.4
+    command: -config.file=/etc/loki/config.yml -target=querier
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml
+      - ./data/loki:/etc/loki
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.8
+
+  loki-query-scheduler:
+    image: grafana/loki:2.9.4
+    command: -config.file=/etc/loki/config.yml -target=query-scheduler
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml
+      - ./data/loki:/etc/loki
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.12
+
+  loki-query-frontend:
+    image: grafana/loki:2.9.4
+    command: -config.file=/etc/loki/config.yml -target=query-frontend
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml
+      - ./data/loki:/etc/loki
+    ports:
+      - "3100:3100"
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.10
+
+  loki-compactor:
+    image: grafana/loki:2.9.4
+    command: -config.file=/etc/loki/config.yml -target=compactor
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml
+      - ./data/loki:/etc/loki
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.11
+
+  frontend:
+    build:
+      context: ./simple-faro-test # <--- Trỏ đến thư mục mới
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3000"
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.7
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    volumes:
+      - ./alloy/config.river:/etc/alloy/config.river
+      - ./logs/backend:/var/log/backend:ro
+    command: run --server.http.listen-addr=0.0.0.0:12345 /etc/alloy/config.river
+    ports:
+      - "12345:12345"
+      - "12347:12347"
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.9
+
+  tempo-distributor:
+    image: grafana/tempo:2.4.1
+    hostname: tempo-distributor
+    command: -config.file=/etc/tempo/config.yml -target=distributor
+    volumes:
+      - ./tempo/config.yml:/etc/tempo/config.yml
+      - ./data/tempo/distributor:/var/tempo
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.13
+
+  tempo-ingester:
+    image: grafana/tempo:2.4.1
+    hostname: tempo-ingester
+    command: -config.file=/etc/tempo/config.yml -target=ingester
+    volumes:
+      - ./tempo/config.yml:/etc/tempo/config.yml
+      - ./data/tempo/ingester:/var/tempo
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.14
+
+  tempo-querier:
+    image: grafana/tempo:2.4.1
+    hostname: tempo-querier
+    command: -config.file=/etc/tempo/config.yml -target=querier
+    volumes:
+      - ./tempo/config.yml:/etc/tempo/config.yml
+      - ./data/tempo/querier:/var/tempo
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.15
+
+  tempo-query-frontend:
+    image: grafana/tempo:2.4.1
+    hostname: tempo-query-frontend
+    command: -config.file=/etc/tempo/config.yml -target=query-frontend
+    volumes:
+      - ./tempo/config.yml:/etc/tempo/config.yml
+      - ./data/tempo/query-frontend:/var/tempo
+    ports:
+      - "3200:3200"
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.16
+
+  tempo-compactor:
+    image: grafana/tempo:2.4.1
+    hostname: tempo-compactor
+    command: -config.file=/etc/tempo/config.yml -target=compactor
+    volumes:
+      - ./tempo/config.yml:/etc/tempo/config.yml
+      - ./data/tempo/compactor:/var/tempo
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.17
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  grafana-storage:
